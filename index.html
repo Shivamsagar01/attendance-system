@@ -3,54 +3,164 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Attendance</title>
+<title>ASF Operators Attendance</title>
 
 <style>
 
 body{
 font-family:Arial;
+background:#f2f4f7;
 padding:20px;
 text-align:center;
-background:#f5f5f5;
 }
+
+/* main card */
+
+.container{
+max-width:420px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* header */
+
+.headerRow{
+display:flex;
+align-items:center;
+justify-content:space-between;
+border-bottom:2px solid #0a4fa3;
+padding-bottom:10px;
+margin-bottom:15px;
+}
+
+.logo{
+height:45px;
+width:auto;
+}
+
+.title{
+flex:1;
+text-align:center;
+font-size:18px;
+font-weight:bold;
+color:#0a4fa3;
+margin:0;
+}
+
+/* time */
+
+.timeBox{
+font-size:14px;
+color:#444;
+margin-bottom:10px;
+}
+
+/* inputs */
 
 input{
-width:90%;
+width:100%;
 padding:12px;
-margin:10px;
-font-size:16px;
+margin-top:12px;
 border-radius:8px;
 border:1px solid #ccc;
+font-size:15px;
 }
 
+/* buttons */
+
 button{
+width:100%;
 padding:14px;
+margin-top:12px;
 font-size:16px;
-background:#2d89ef;
-color:white;
 border:none;
 border-radius:8px;
-width:90%;
-margin-top:10px;
+background:#0a4fa3;
+color:white;
+cursor:pointer;
 }
+
+button:disabled{
+background:#999;
+}
+
+button:hover{
+background:#083c7a;
+}
+
+/* camera */
 
 video{
 width:100%;
+margin-top:12px;
 border-radius:10px;
 display:none;
 }
 
-img{
-width:150px;
-margin-top:20px;
+#dummyFace{
+width:120px;
+margin-top:15px;
 }
 
 #photoPreview{
 width:100%;
+margin-top:10px;
 border-radius:10px;
 display:none;
+}
+
+/* loading overlay */
+
+#loadingOverlay{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.5);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+.spinner{
+border:6px solid #f3f3f3;
+border-top:6px solid #0a4fa3;
+border-radius:50%;
+width:50px;
+height:50px;
+animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
+
+/* success popup */
+
+#successPopup{
+position:fixed;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+background:white;
+padding:30px;
+border-radius:12px;
+box-shadow:0 5px 25px rgba(0,0,0,0.2);
+display:none;
+z-index:1000;
+}
+
+#successPopup h3{
+margin:0;
+color:#0a4fa3;
 }
 
 </style>
@@ -59,30 +169,47 @@ display:none;
 
 <body>
 
-<h2>Attendance Marking</h2>
+<div class="container">
 
-<input id="name" placeholder="Enter Name" required>
+<div class="headerRow">
 
-<input id="empId" placeholder="Employee ID" required>
+<img src="hpcl_logo.png" class="logo">
 
+<h2 class="title">ASF Operators Attendance</h2>
+
+<img src="hpcl_aviation.png" class="logo">
+
+</div>
+
+<div class="timeBox" id="timeDisplay"></div>
+
+<input id="name" placeholder="Enter Name">
+
+<input id="empId" placeholder="Employee ID">
 
 <img id="dummyFace" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
-
 
 <video id="video" autoplay></video>
 
 <canvas id="canvas" style="display:none"></canvas>
 
-
 <img id="photoPreview">
 
+<button onclick="startCamera()">Capture Selfie</button>
 
-<button id="startCameraBtn" onclick="startCamera()">Start Camera</button>
+<button id="captureBtn" onclick="capturePhoto()" style="display:none">Take Photo</button>
 
-<button id="captureBtn" onclick="capturePhoto()" style="display:none">Capture Selfie</button>
+<button id="submitBtn" onclick="submitAttendance()" disabled>Submit Attendance</button>
 
-<button onclick="submitAttendance()">Submit</button>
+</div>
 
+<div id="loadingOverlay">
+<div class="spinner"></div>
+</div>
+
+<div id="successPopup">
+<h3>✓ Attendance Recorded</h3>
+</div>
 
 <script>
 
@@ -91,38 +218,38 @@ const API_URL="https://script.google.com/macros/s/AKfycbzDmX7nWepOgFS5HI8-NHw5gA
 let imageData="";
 let latitude="";
 let longitude="";
-let stream=null;
 
-navigator.geolocation.getCurrentPosition(function(pos){
+/* time display */
 
-latitude=pos.coords.latitude;
-longitude=pos.coords.longitude;
+function updateTime(){
 
-});
+const now=new Date();
 
+document.getElementById("timeDisplay").innerText=
+"Date: "+now.toLocaleDateString()+" | Time: "+now.toLocaleTimeString();
+
+}
+
+setInterval(updateTime,1000);
+updateTime();
+
+/* camera */
 
 function startCamera(){
 
 navigator.mediaDevices.getUserMedia({video:true})
 
-.then(function(s){
-
-stream=s;
-
-document.getElementById("video").srcObject=stream;
+.then(stream=>{
 
 document.getElementById("video").style.display="block";
-
+document.getElementById("dummyFace").style.display="none";
 document.getElementById("captureBtn").style.display="block";
 
-document.getElementById("dummyFace").style.display="none";
-
-document.getElementById("startCameraBtn").style.display="none";
+document.getElementById("video").srcObject=stream;
 
 });
 
 }
-
 
 function capturePhoto(){
 
@@ -134,21 +261,47 @@ canvas.height=video.videoHeight;
 
 canvas.getContext("2d").drawImage(video,0,0);
 
-imageData=canvas.toDataURL("image/jpeg");
+imageData=canvas.toDataURL("image/png");
 
 document.getElementById("photoPreview").src=imageData;
 document.getElementById("photoPreview").style.display="block";
 
-stream.getTracks().forEach(track=>track.stop());
-
+video.srcObject.getTracks().forEach(track=>track.stop());
 video.style.display="none";
 
-document.getElementById("captureBtn").style.display="none";
+/* enable submit */
+
+document.getElementById("submitBtn").disabled=false;
 
 }
 
+/* location */
 
-function submitAttendance(){
+function getLocation(){
+
+return new Promise((resolve,reject)=>{
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+latitude=pos.coords.latitude;
+longitude=pos.coords.longitude;
+
+resolve();
+
+},function(){
+
+alert("Location permission required");
+reject();
+
+});
+
+});
+
+}
+
+/* submit */
+
+async function submitAttendance(){
 
 const name=document.getElementById("name").value;
 const empId=document.getElementById("empId").value;
@@ -156,36 +309,43 @@ const empId=document.getElementById("empId").value;
 if(!name || !empId || !imageData){
 
 alert("Name, Employee ID and Selfie are mandatory");
-
 return;
 
 }
 
+document.getElementById("loadingOverlay").style.display="flex";
+
+await getLocation();
+
 fetch(API_URL,{
-
 method:"POST",
-
 body:JSON.stringify({
-
 name:name,
 empId:empId,
 lat:latitude,
 lng:longitude,
 image:imageData
-
 })
-
 })
 
 .then(res=>res.text())
 
 .then(response=>{
 
+document.getElementById("loadingOverlay").style.display="none";
+
 if(response=="SUCCESS"){
 
-alert("Attendance Recorded Successfully");
+document.getElementById("successPopup").style.display="block";
+
+setTimeout(()=>{
+
+window.close();
+
+},2000);
 
 }
+
 else{
 
 alert("Attendance already marked for this shift");
