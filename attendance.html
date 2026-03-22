@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Attendance</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:20px;
+text-align:center;
+background:#f5f5f5;
+}
+
+input{
+width:90%;
+padding:12px;
+margin:10px;
+font-size:16px;
+border-radius:8px;
+border:1px solid #ccc;
+}
+
+button{
+padding:14px;
+font-size:16px;
+background:#2d89ef;
+color:white;
+border:none;
+border-radius:8px;
+width:90%;
+margin-top:10px;
+}
+
+video{
+width:100%;
+border-radius:10px;
+display:none;
+}
+
+img{
+width:150px;
+margin-top:20px;
+}
+
+#photoPreview{
+width:100%;
+border-radius:10px;
+display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Attendance Marking</h2>
+
+<input id="name" placeholder="Enter Name" required>
+
+<input id="empId" placeholder="Employee ID" required>
+
+
+<img id="dummyFace" src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+
+
+<video id="video" autoplay></video>
+
+<canvas id="canvas" style="display:none"></canvas>
+
+
+<img id="photoPreview">
+
+
+<button id="startCameraBtn" onclick="startCamera()">Start Camera</button>
+
+<button id="captureBtn" onclick="capturePhoto()" style="display:none">Capture Selfie</button>
+
+<button onclick="submitAttendance()">Submit</button>
+
+
+<script>
+
+const API_URL="https://script.google.com/macros/s/AKfycbzDmX7nWepOgFS5HI8-NHw5gAUZo-CDPGcHMOyAO3xm6nUM5o69H7yeqXLOv9UrLgbMFw/exec";
+
+let imageData="";
+let latitude="";
+let longitude="";
+let stream=null;
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+latitude=pos.coords.latitude;
+longitude=pos.coords.longitude;
+
+});
+
+
+function startCamera(){
+
+navigator.mediaDevices.getUserMedia({video:true})
+
+.then(function(s){
+
+stream=s;
+
+document.getElementById("video").srcObject=stream;
+
+document.getElementById("video").style.display="block";
+
+document.getElementById("captureBtn").style.display="block";
+
+document.getElementById("dummyFace").style.display="none";
+
+document.getElementById("startCameraBtn").style.display="none";
+
+});
+
+}
+
+
+function capturePhoto(){
+
+const video=document.getElementById("video");
+const canvas=document.getElementById("canvas");
+
+canvas.width=video.videoWidth;
+canvas.height=video.videoHeight;
+
+canvas.getContext("2d").drawImage(video,0,0);
+
+imageData=canvas.toDataURL("image/jpeg");
+
+document.getElementById("photoPreview").src=imageData;
+document.getElementById("photoPreview").style.display="block";
+
+stream.getTracks().forEach(track=>track.stop());
+
+video.style.display="none";
+
+document.getElementById("captureBtn").style.display="none";
+
+}
+
+
+function submitAttendance(){
+
+const name=document.getElementById("name").value;
+const empId=document.getElementById("empId").value;
+
+if(!name || !empId || !imageData){
+
+alert("Name, Employee ID and Selfie are mandatory");
+
+return;
+
+}
+
+fetch(API_URL,{
+
+method:"POST",
+
+body:JSON.stringify({
+
+name:name,
+empId:empId,
+lat:latitude,
+lng:longitude,
+image:imageData
+
+})
+
+})
+
+.then(res=>res.text())
+
+.then(response=>{
+
+if(response=="SUCCESS"){
+
+alert("Attendance Recorded Successfully");
+
+}
+else{
+
+alert("Attendance already marked for this shift");
+
+}
+
+});
+
+}
+
+</script>
+
+</body>
+
+</html>
