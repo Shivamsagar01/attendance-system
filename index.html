@@ -8,6 +8,12 @@
 
 <style>
 
+/* global fix for padding overflow */
+
+*{
+box-sizing:border-box;
+}
+
 body{
 font-family:Arial;
 background:#f2f4f7;
@@ -15,13 +21,13 @@ padding:20px;
 text-align:center;
 }
 
-/* card */
+/* container */
 
 .container{
 max-width:420px;
 margin:auto;
 background:white;
-padding:25px;
+padding:20px;
 border-radius:12px;
 box-shadow:0 5px 20px rgba(0,0,0,0.1);
 }
@@ -93,28 +99,36 @@ button:disabled{
 background:#999;
 }
 
-/* camera */
+/* camera preview */
 
 video{
 width:100%;
-margin-top:12px;
-border-radius:10px;
-display:none;
-}
-
-#dummyFace{
-width:120px;
-margin-top:15px;
-}
-
-#photoPreview{
-width:100%;
+max-height:220px;
+object-fit:cover;
 margin-top:10px;
 border-radius:10px;
 display:none;
 }
 
-/* loader */
+/* dummy face */
+
+#dummyFace{
+width:90px;
+margin-top:12px;
+}
+
+/* captured selfie preview */
+
+#photoPreview{
+width:100%;
+max-height:220px;
+object-fit:cover;
+margin-top:10px;
+border-radius:10px;
+display:none;
+}
+
+/* loading overlay */
 
 #loadingOverlay{
 position:fixed;
@@ -224,14 +238,14 @@ color:#444;
 
 <script>
 
-const API_URL="https://script.google.com/macros/s/AKfycbzDmX7nWepOgFS5HI8-NHw5gAUZo-CDPGcHMOyAO3xm6nUM5o69H7yeqXLOv9UrLgbMFw/exec";
+const API_URL="PASTE_YOUR_WEB_APP_URL";
 
 let imageData="";
 let latitude="";
 let longitude="";
 let cameraStarted=false;
 
-/* time */
+/* live clock */
 
 function updateTime(){
 
@@ -245,7 +259,7 @@ document.getElementById("timeDisplay").innerText=
 setInterval(updateTime,1000);
 updateTime();
 
-/* camera button logic */
+/* camera button */
 
 function cameraAction(){
 
@@ -279,7 +293,7 @@ capturePhoto();
 
 }
 
-/* capture */
+/* capture image */
 
 function capturePhoto(){
 
