@@ -4,7 +4,6 @@
 <head>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>ASF Operators Attendance</title>
 
 <style>
@@ -16,7 +15,7 @@ padding:20px;
 text-align:center;
 }
 
-/* main card */
+/* card */
 
 .container{
 max-width:420px;
@@ -32,20 +31,18 @@ box-shadow:0 5px 20px rgba(0,0,0,0.1);
 .headerRow{
 display:flex;
 align-items:center;
-justify-content:space-between;
+justify-content:center;
+gap:12px;
 border-bottom:2px solid #0a4fa3;
 padding-bottom:10px;
 margin-bottom:15px;
 }
 
 .logo{
-height:45px;
-width:auto;
+height:42px;
 }
 
 .title{
-flex:1;
-text-align:center;
 font-size:18px;
 font-weight:bold;
 color:#0a4fa3;
@@ -80,17 +77,20 @@ margin-top:12px;
 font-size:16px;
 border:none;
 border-radius:8px;
-background:#0a4fa3;
 color:white;
 cursor:pointer;
 }
 
-button:disabled{
-background:#999;
+#cameraBtn{
+background:#0a4fa3;
 }
 
-button:hover{
-background:#083c7a;
+#submitBtn{
+background:#2e9e45;
+}
+
+button:disabled{
+background:#999;
 }
 
 /* camera */
@@ -114,7 +114,7 @@ border-radius:10px;
 display:none;
 }
 
-/* loading overlay */
+/* loader */
 
 #loadingOverlay{
 position:fixed;
@@ -133,8 +133,8 @@ z-index:999;
 border:6px solid #f3f3f3;
 border-top:6px solid #0a4fa3;
 border-radius:50%;
-width:50px;
-height:50px;
+width:55px;
+height:55px;
 animation:spin 1s linear infinite;
 }
 
@@ -151,16 +151,30 @@ top:50%;
 left:50%;
 transform:translate(-50%,-50%);
 background:white;
-padding:30px;
-border-radius:12px;
-box-shadow:0 5px 25px rgba(0,0,0,0.2);
+padding:35px;
+border-radius:14px;
+box-shadow:0 6px 30px rgba(0,0,0,0.25);
 display:none;
 z-index:1000;
+width:280px;
 }
 
-#successPopup h3{
+.successIcon{
+font-size:40px;
+color:#2e9e45;
+margin-bottom:10px;
+}
+
+#successPopup h2{
 margin:0;
-color:#0a4fa3;
+color:#2e9e45;
+font-size:22px;
+}
+
+#successPopup p{
+font-size:14px;
+margin-top:8px;
+color:#444;
 }
 
 </style>
@@ -174,10 +188,7 @@ color:#0a4fa3;
 <div class="headerRow">
 
 <img src="hpcl_logo.png" class="logo">
-
 <h2 class="title">ASF Operators Attendance</h2>
-
-<img src="hpcl_aviation.png" class="logo">
 
 </div>
 
@@ -195,9 +206,7 @@ color:#0a4fa3;
 
 <img id="photoPreview">
 
-<button onclick="startCamera()">Capture Selfie</button>
-
-<button id="captureBtn" onclick="capturePhoto()" style="display:none">Take Photo</button>
+<button id="cameraBtn" onclick="cameraAction()">Capture Selfie</button>
 
 <button id="submitBtn" onclick="submitAttendance()" disabled>Submit Attendance</button>
 
@@ -208,7 +217,9 @@ color:#0a4fa3;
 </div>
 
 <div id="successPopup">
-<h3>✓ Attendance Recorded</h3>
+<div class="successIcon">✓</div>
+<h2>Attendance Recorded</h2>
+<p>Your attendance has been successfully submitted.</p>
 </div>
 
 <script>
@@ -218,8 +229,9 @@ const API_URL="https://script.google.com/macros/s/AKfycbzDmX7nWepOgFS5HI8-NHw5gA
 let imageData="";
 let latitude="";
 let longitude="";
+let cameraStarted=false;
 
-/* time display */
+/* time */
 
 function updateTime(){
 
@@ -233,23 +245,41 @@ document.getElementById("timeDisplay").innerText=
 setInterval(updateTime,1000);
 updateTime();
 
-/* camera */
+/* camera button logic */
 
-function startCamera(){
+function cameraAction(){
+
+if(!cameraStarted){
 
 navigator.mediaDevices.getUserMedia({video:true})
 
 .then(stream=>{
 
+cameraStarted=true;
+
 document.getElementById("video").style.display="block";
 document.getElementById("dummyFace").style.display="none";
-document.getElementById("captureBtn").style.display="block";
 
 document.getElementById("video").srcObject=stream;
+
+const btn=document.getElementById("cameraBtn");
+
+btn.innerText="Upload Selfie";
+btn.style.background="#f39c12";
 
 });
 
 }
+
+else{
+
+capturePhoto();
+
+}
+
+}
+
+/* capture */
 
 function capturePhoto(){
 
@@ -268,8 +298,6 @@ document.getElementById("photoPreview").style.display="block";
 
 video.srcObject.getTracks().forEach(track=>track.stop());
 video.style.display="none";
-
-/* enable submit */
 
 document.getElementById("submitBtn").disabled=false;
 
@@ -342,7 +370,7 @@ setTimeout(()=>{
 
 window.close();
 
-},2000);
+},2200);
 
 }
 
