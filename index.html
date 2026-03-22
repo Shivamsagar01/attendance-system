@@ -3,12 +3,14 @@
 
 <head>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a4fa3">
+
 <title>ASF Operators Attendance</title>
 
 <style>
-
-/* global fix for padding overflow */
 
 *{
 box-sizing:border-box;
@@ -19,6 +21,7 @@ font-family:Arial;
 background:#f2f4f7;
 padding:20px;
 text-align:center;
+margin:0;
 }
 
 /* container */
@@ -99,7 +102,7 @@ button:disabled{
 background:#999;
 }
 
-/* camera preview */
+/* camera */
 
 video{
 width:100%;
@@ -117,7 +120,7 @@ width:90px;
 margin-top:12px;
 }
 
-/* captured selfie preview */
+/* preview */
 
 #photoPreview{
 width:100%;
@@ -128,7 +131,7 @@ border-radius:10px;
 display:none;
 }
 
-/* loading overlay */
+/* loading */
 
 #loadingOverlay{
 position:fixed;
@@ -238,14 +241,14 @@ color:#444;
 
 <script>
 
-const API_URL="PASTE_YOUR_WEB_APP_URL";
+const API_URL="https://script.google.com/macros/s/AKfycbzDmX7nWepOgFS5HI8-NHw5gAUZo-CDPGcHMOyAO3xm6nUM5o69H7yeqXLOv9UrLgbMFw/exec";
 
 let imageData="";
 let latitude="";
 let longitude="";
 let cameraStarted=false;
 
-/* live clock */
+/* clock */
 
 function updateTime(){
 
@@ -259,7 +262,7 @@ document.getElementById("timeDisplay").innerText=
 setInterval(updateTime,1000);
 updateTime();
 
-/* camera button */
+/* camera */
 
 function cameraAction(){
 
@@ -293,7 +296,7 @@ capturePhoto();
 
 }
 
-/* capture image */
+/* capture */
 
 function capturePhoto(){
 
@@ -401,5 +404,4 @@ alert("Attendance already marked for this shift");
 </script>
 
 </body>
-
 </html>
